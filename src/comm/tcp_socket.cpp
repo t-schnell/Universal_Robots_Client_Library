@@ -91,19 +91,33 @@ bool TCPSocket::setup(std::string& host, int port)
     }
   }
 
-  freeaddrinfo(result);
-
   if (!connected)
   {
-    state_ = SocketState::Invalid;
-    LOG_ERROR("Connection setup failed for %s:%d", host.c_str(), port);
+    //state_ = SocketState::Invalid;
+    //LOG_ERROR("Connection setup failed for %s:%d", host.c_str(), port);
+    LOG_WARN("Could not connect to robot, retrying with 1 Hz. Check if robot is powered on and connected.");
+    while (!connected)
+    {
+      sleep(1);
+      for (struct addrinfo* p = result; p != nullptr; p = p->ai_next)
+      {
+        socket_fd_ = ::socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+
+        if (socket_fd_ != -1 && open(socket_fd_, p->ai_addr, p->ai_addrlen))
+        {
+          connected = true;
+          break;
+        }
+      }
+    }
+    LOG_WARN("Connection could now be established.");
   }
-  else
-  {
-    setOptions(socket_fd_);
-    state_ = SocketState::Connected;
-    LOG_DEBUG("Connection established for %s:%d", host.c_str(), port);
-  }
+
+  freeaddrinfo(result);
+
+  setOptions(socket_fd_);
+  state_ = SocketState::Connected;
+  LOG_DEBUG("Connection established for %s:%d", host.c_str(), port);
   return connected;
 }
 
