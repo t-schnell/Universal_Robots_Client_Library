@@ -25,6 +25,7 @@
  */
 //----------------------------------------------------------------------
 
+#include <chrono>
 #include "ur_client_library/rtde/rtde_client.h"
 #include "ur_client_library/exceptions.h"
 
@@ -350,6 +351,13 @@ std::unique_ptr<rtde_interface::DataPackage> RTDEClient::getDataPackage(std::chr
       return std::unique_ptr<rtde_interface::DataPackage>(tmp);
     }
   }
+  LOG_WARN("Re-initializing RTDE-Client");
+  pipeline_.stop();
+  stream_.disconnect();
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+  stream_.connect();
+  init();
+  start();
   return std::unique_ptr<rtde_interface::DataPackage>(nullptr);
 }
 
