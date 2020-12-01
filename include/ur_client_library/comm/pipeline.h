@@ -22,6 +22,7 @@
 
 #include "ur_client_library/comm/package.h"
 #include "ur_client_library/log.h"
+#include "ur_client_library/exceptions.h"
 #include "ur_client_library/queue/readerwriterqueue.h"
 #include <atomic>
 #include <chrono>
@@ -398,23 +399,29 @@ private:
     std::vector<std::unique_ptr<T>> products;
     while (running_)
     {
-      if (!producer_.tryGet(products))
-      {
-        producer_.teardownProducer();
-        running_ = false;
-        break;
-      }
-
-      for (auto& p : products)
-      {
-        if (!queue_.tryEnqueue(std::move(p)))
+      try {
+        if (!producer_.tryGet(products))
         {
-          LOG_ERROR("Pipeline producer overflowed! <%s>", name_.c_str());
+          producer_.teardownProducer();
+          running_ = false;
+          break;
         }
-      }
 
-      products.clear();
+
+        for (auto& p : products)
+        {
+          if (!queue_.tryEnqueue(std::move(p)))
+          {
+            LOG_ERROR("Pipeline producer overflowed! <%s>", name_.c_str());
+          }
+        }
+
+        products.clear();
+      } catch (urcl::UrException &e) {
+        LOG_ERROR(e.what());
+      }
     }
+
     LOG_DEBUG("Pipeline producer ended! <%s>", name_.c_str());
     notifier_.stopped(name_);
   }
