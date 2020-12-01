@@ -73,12 +73,12 @@ std::string DashboardClient::read()
   size_t read_chars = 99;
   while (read_chars > 0)
   {
-    if (!TCPSocket::read((uint8_t*)&character, 1, read_chars))
+    while (!TCPSocket::read((uint8_t*)&character, 1, read_chars))
     {
-      disconnect();
-      throw TimeoutException("Did not receive answer from dashboard server in time. Disconnecting from dashboard "
-                             "server.",
-                             *recv_timeout_);
+      //disconnect();
+      //throw TimeoutException("Did not receive answer from dashboard server in time. Disconnecting from dashboard "
+                             //"server.",
+                             //*recv_timeout_);
     }
     result << character;
     if (character == '\n')
