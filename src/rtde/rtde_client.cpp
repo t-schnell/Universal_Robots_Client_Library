@@ -41,8 +41,7 @@ RTDEClient::RTDEClient(std::string robot_ip, comm::INotifier& notifier, const st
   , parser_(output_recipe_)
   , prod_(stream_, parser_)
   , pipeline_(prod_, PIPELINE_NAME, notifier)
-  , writer_(&stream_, input_recipe_)
-  , max_frequency_(URE_MAX_FREQUENCY)
+  , writer_(&stream_, input_recipe_) , max_frequency_(URE_MAX_FREQUENCY)
 {
 }
 
@@ -95,7 +94,7 @@ bool RTDEClient::negotiateProtocolVersion(const uint16_t protocol_version)
   std::unique_ptr<RTDEPackage> package;
   while (num_retries < MAX_REQUEST_RETRIES)
   {
-    if (!pipeline_.getLatestProduct(package, std::chrono::milliseconds(1000)))
+    if (!pipeline_.getLatestProduct(package, std::chrono::milliseconds(10000)))
     {
       throw UrException("No answer to RTDE protocol version negotiation request was received from robot. This should "
                         "not "
