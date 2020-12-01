@@ -56,7 +56,7 @@ void TCPSocket::setOptions(int socket_fd)
 bool TCPSocket::setup(std::string& host, int port)
 {
   if (state_ == SocketState::Connected)
-    return false;
+    return true;
 
   LOG_DEBUG("Setting up connection: %s:%d", host.c_str(), port);
 
