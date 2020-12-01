@@ -79,6 +79,11 @@ public:
   void run();
 
   /*!
+   * \brief Returns the running status of the RTDE writer.
+   */
+  bool isRunning();
+
+  /*!
    * \brief Creates a package to request setting a new value for the speed slider.
    *
    * \param speed_slider_fraction The new speed slider fraction as a value between 0.0 and 1.0

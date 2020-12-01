@@ -265,7 +265,8 @@ void RTDEClient::setupInputs()
         }
       }
 
-      writer_.init(tmp_input->input_recipe_id_);
+      if(writer_.isRunning())
+        writer_.init(tmp_input->input_recipe_id_);
 
       return;
     }
