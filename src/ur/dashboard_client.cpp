@@ -73,12 +73,11 @@ std::string DashboardClient::read()
   size_t read_chars = 99;
   while (read_chars > 0)
   {
-    while (!TCPSocket::read((uint8_t*)&character, 1, read_chars))
+    if (!TCPSocket::read((uint8_t*)&character, 1, read_chars))
     {
-      //disconnect();
-      //throw TimeoutException("Did not receive answer from dashboard server in time. Disconnecting from dashboard "
-                             //"server.",
-                             //*recv_timeout_);
+      LOG_ERROR("Did not receive answer from dashboard client.");
+      disconnect();
+      return "Did not receive answer from dashboard client.";
     }
     result << character;
     if (character == '\n')
@@ -91,6 +90,10 @@ std::string DashboardClient::read()
 
 std::string DashboardClient::sendAndReceive(const std::string& text)
 {
+  if (getState() != comm::SocketState::Connected)
+  {
+    connect();
+  }
   std::string response = "ERROR";
   std::lock_guard<std::mutex> lock(write_mutex_);
   if (send(text))
