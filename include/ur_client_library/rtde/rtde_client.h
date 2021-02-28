@@ -159,6 +159,7 @@ private:
   comm::URProducer<RTDEPackage> prod_;
   comm::Pipeline<RTDEPackage> pipeline_;
   RTDEWriter writer_;
+  bool reconnect_necessary_;
 
   VersionInformation urcontrol_version_;
 

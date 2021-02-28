@@ -77,6 +77,8 @@ bool RTDEClient::init()
   // We finished communication for now
   pipeline_.stop();
 
+  reconnect_necessary_ = false;
+
   // We throw exceptions on the way, so if we made it that far, we can return true.
   return true;
 }
@@ -341,6 +343,17 @@ std::vector<std::string> RTDEClient::readRecipe(const std::string& recipe_file)
 
 std::unique_ptr<rtde_interface::DataPackage> RTDEClient::getDataPackage(std::chrono::milliseconds timeout)
 {
+  if (reconnect_necessary_)
+  {
+    LOG_WARN("Re-initializing RTDE-Client");
+    pipeline_.stop();
+    stream_.disconnect();
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    stream_.connect();
+    init();
+    start();
+    reconnect_necessary_ = false;
+  }
   std::unique_ptr<RTDEPackage> urpackage;
   if (pipeline_.getLatestProduct(urpackage, timeout))
   {
@@ -351,13 +364,7 @@ std::unique_ptr<rtde_interface::DataPackage> RTDEClient::getDataPackage(std::chr
       return std::unique_ptr<rtde_interface::DataPackage>(tmp);
     }
   }
-  LOG_WARN("Re-initializing RTDE-Client");
-  pipeline_.stop();
-  stream_.disconnect();
-  std::this_thread::sleep_for(std::chrono::seconds(10));
-  stream_.connect();
-  init();
-  start();
+  reconnect_necessary_ = true;
   return std::unique_ptr<rtde_interface::DataPackage>(nullptr);
 }
 
