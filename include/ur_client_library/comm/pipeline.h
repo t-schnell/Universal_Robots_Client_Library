@@ -418,7 +418,7 @@ private:
 
         products.clear();
       } catch (urcl::UrException &e) {
-        LOG_ERROR(e.what());
+        LOG_ERROR("An error occurred while trying to read a package from the robot: %s", e.what());
       }
     }
 
